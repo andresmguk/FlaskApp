@@ -48,8 +48,9 @@ font-size: 1.5em;
 }
 
 .add-task dl {
-font-weight: bold; 
+	font-weight: bold; 
 }
+
 
 .metanav { 
 	text-align: right; 

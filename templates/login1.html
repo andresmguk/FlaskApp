@@ -7,9 +7,10 @@
 <form method="post" action="/">
 	{{ form.csrf_token }}
 	<p>
-	<div class="login_text"><strong>Username: </strong><span class="log">{{ form.name }}</span></div>
-	<div class="login_text"><strong>Password: </strong><span class="log">{{ form.password }}</span></div>
-	<br> 
+	{{ form.name.label }}: {{ form.name }} 
+	&nbsp;&nbsp;
+	{{ form.password.label }}: {{ form.password }} 
+	&nbsp;&nbsp;
 	<input type="submit" value="Submit">
 	</p>
 </form>
