@@ -1,24 +1,25 @@
 # flasktaskr/views.py
 
 # imports
-import sqlite3
+from forms import AddTaskForm
+
 from functools import wraps
 
 from flask import Flask, flash, redirect, render_template, \
  request, session, url_for, g
 
-from forms import AddTaskForm
+from flask.ext.sqlalchemy import SQLAlchemy
 
 
 # config
 app = Flask(__name__)
 app.config.from_object('_config')
+db = SQLAlchemy(app)
+
+from models import Task
 
 
 # helper functions
-def connect_db():
-	return sqlite3.connect(app.config['DATABASE_PATH'])
-
 
 def login_required(test):
 	@wraps(test)
@@ -59,25 +60,12 @@ def login():
 @app.route('/tasks/') 
 @login_required
 def tasks():
-	g.db = connect_db() 
-	cur = g.db.execute(
-		'SELECT name, due_date, priority,task_id from tasks where status=1'
-		)
+	open_tasks = db.session.query(Task) .filter_by(status='1') \
+	.order_by(Task.due_date.asc())
 
-	open_tasks = [
-		dict(name=row[0], due_date=row[1], priority=row[2], 
-			task_id=row[3]) for row in cur.fetchall()
-	]
+	closed_tasks = db.session.query(Task) .filter_by(status='0') \
+	.order_by(Task.due_date.asc())
 
-	cur = g.db.execute(
-		'SELECT name, due_date, priority, task_id from tasks where status=0'
-		)
-
-	closed_tasks = [
-		dict(name=row[0], due_date=row[1], priority=row[2], task_id=row[3]) for row in cur.fetchall()
-	]	
-
-	g.db.close()
 	return render_template(
 		'tasks.html', 
 		form=AddTaskForm(request.form), 
@@ -90,35 +78,24 @@ def tasks():
 @app.route('/add/', methods=['POST']) 
 @login_required
 def new_task():
-	# connect to the db
-	g.db = connect_db()
 	
-	# create variables to store the input data
-	name = request.form['name']
-	date = request.form['due_date'] 
-	priority = request.form['priority']
-	
-	# check if the fiedls were completed
-	if not name or not date or not priority:
-		flash("All fields are required. Please try again.")
-		return redirect(url_for('tasks')) 
-	
-	# insert the values into the table
-	else:
-		g.db.execute('INSERT into tasks (name, due_date, priority, status) \
-		values (?, ?, ?, 1)', [ 
-			request.form['name'], 
-			request.form['due_date'], 
-			request.form['priority']
-			] 
-		)
+	form = AddTaskForm(request.form)
 
-	# commit and close the db connection
-	g.db.commit()
-	g.db.close()
+	if request.method == 'POST':
+		if form.validate_on_submit():
+			new_task = Task(
+				form.name.data,
+				form.due_date.data,
+				form.priority.data,
+				'1'
+			)
+			# Add and commit to the db
+			db.session.add(new_task)
+			db.session.commit()
 
-	# flash message and redirect to tasks.html
-	flash('New entry was successfully posted. Thanks.') 
+			# flash message and redirect to tasks.html
+			flash('New entry was successfully posted. Thanks.') 
+	
 	return redirect(url_for('tasks'))
 
 
@@ -127,18 +104,17 @@ def new_task():
 @login_required
 def complete(task_id):
 	
-	# connect to the db
-	g.db = connect_db() 
+	# set a new var
+	new_id = task_id 
 	
-	# update the status variables. task_id to str to allow concatenation
-	g.db.execute('UPDATE tasks set status = 0 where task_id='+str(task_id))
+	# Query and update the database
+	db.session.query(Task) .filter_by(task_id=new_id) .update({"status": "0"})
 	
 	# commit changes an close db
-	g.db.commit()
-	g.db.close()
-
+	db.session.commit()
+	
 	# flash message and redirect to tasks.html
-	flash('The task was marked as complete.') 
+	flash('The task is complete!') 
 	return redirect(url_for('tasks'))
 
 
@@ -146,10 +122,18 @@ def complete(task_id):
 @app.route('/delete/<int:task_id>/') 
 @login_required
 def delete_entry(task_id):
-	g.db = connect_db()
-	g.db.execute('DELETE from tasks where task_id='+str(task_id)) 
-	g.db.commit()
-	g.db.close()
+
+	# set a new var
+	new_id = task_id 
+	
+	# Query and delete the entry
+	db.session.query(Task) .filter_by(task_id=new_id) .delete()
+	
+	# commit changes an close db
+	db.session.commit()
+	
+	# flash message and redirect to tasks.html
+	
 	flash('The task was deleted.')
 	return redirect(url_for('tasks'))
 
