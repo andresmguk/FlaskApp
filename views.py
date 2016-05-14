@@ -8,6 +8,7 @@ from forms import AddTaskForm, RegisterForm, LoginForm
 from functools import wraps
 from flask import Flask, flash, redirect, render_template, \
  request, session, url_for
+from sqlalchemy.exc import IntegrityError
 from flask.ext.sqlalchemy import SQLAlchemy
 import datetime
 
@@ -66,6 +67,7 @@ def closed_tasks():
 
 # Logout route
 @app.route('/logout/')
+@login_required
 def logout(): 
 	session.pop('logged_in', None)
 	session.pop('user_id', None) 
@@ -102,13 +104,18 @@ def register():
 	if request.method == 'POST':
 		if form.validate_on_submit(): 
 			new_user = User(form.name.data, form.email.data, form.password.data,)
-			db.session.add(new_user)
-			db.session.commit()
-			flash('Thanks for registering. Please login.') 
-			return redirect(url_for('login'))
+			
+			try:
+				db.session.add(new_user)
+				db.session.commit()
+				flash('Thanks for registering. Please login.') 
+				return redirect(url_for('login'))
+
+			except IntegrityError: # DB integrity error check
+				error = 'That username and/or email already exist.'
+				return render_template('register.html', form=form, error=error)
 
 	return render_template('register.html', form=form, error=error)
-
 
 
 
@@ -172,6 +179,8 @@ def complete(task_id):
 	# flash message and redirect to tasks.html
 	flash('The task is complete!') 
 	return redirect(url_for('tasks'))
+
+
 
 
 # Delete Tasks

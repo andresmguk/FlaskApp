@@ -35,7 +35,6 @@
 
 <div class="entries">
   <br>
-  <br>
   <h2>Open tasks:</h2>
   <br> 
 </div>
@@ -60,46 +59,49 @@
       <td> {{ task.posted_date }} </td>
       <td> {{ task.priority }} </td>
       <td> {{ task.poster.name }} </td>
-      <td> <a href="{{ url_for('delete_entry', task_id = task.task_id) }}">Delete</a> - <a href="{{ url_for('complete', task_id = task.task_id) }}">Mark as Complete</td> 
+      <td> <div class="item">
+        <a href="{{ url_for('delete_entry', task_id = task.task_id) }}"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
+        <a href="{{ url_for('complete', task_id = task.task_id) }}"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a>
+      </div>
+      </td> 
     </tr>
       {% endfor %} 
   </tbody>
 </table>
 
-  <br>
-  <br>
-
-
 <div class="entries">
-  <h2>Closed tasks:</h2> 
-  <div class="datagrid">
-    <table> 
-	    <thead>
-        <tr>
-          <th width="200px"><strong>Task Name</strong></th> 
-          <th width="75px"><strong>Due Date</strong></th> 
-          <th width="100px"><strong>Posted Date</strong></th> 
-          <th width="50px"><strong>Priority</strong></th> 
-          <th width="90px"><strong>Posted By</strong></th>
-          <th><strong>Actions</strong></th>
-		    </tr>
-	    </thead>
-
-	    {% for task in closed_tasks %}
-	      <tr>
-          <td width="200px">{{ task.name }}</td>
-          <td width="75px">{{ task.due_date }}</td> 
-          <td width="100px">{{ task.posted_date }}</td> 
-          <td width="50px">{{ task.priority }}</td> 
-          <td width="90px">{{ task.poster.name }}</td> 
-          <td>
-            <a href="{{ url_for('delete_entry', task_id = task.task_id) }}">Delete</a>
-		     </td> 
-        </tr>
-      {% endfor %} 
-    </table>
-  </div>
+  <br>
+  <h2>Closed tasks:</h2>
+  <br> 
 </div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Task Name</th>
+      <th>Due Date</th>
+      <th>Posted Date</th>
+      <th>Priority</th>
+      <th>Posted By</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+      {% for task in closed_tasks %}
+    <tr>
+      <td> {{ task.name }} </td>
+      <td> {{ task.due_date }} </td>
+      <td> {{ task.posted_date }} </td>
+      <td> {{ task.priority }} </td>
+      <td> {{ task.poster.name }} </td>
+      <td> <div class="item">
+        <a href="{{ url_for('delete_entry', task_id = task.task_id) }}"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
+      </div>
+      </td> 
+    </tr>
+      {% endfor %} 
+  </tbody>
+</table>
 
 {% endblock %}
 

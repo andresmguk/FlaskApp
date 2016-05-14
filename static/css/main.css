@@ -20,6 +20,29 @@ h2{
 	font-size: 1.5em;
 }
 
+.content {
+	padding-top: 30px; 
+	width: 700px;
+	margin-left: auto;
+	margin-right: auto;
+
+}
+
+.item {
+
+	display: inline-block;
+    text-align: center;
+
+
+}
+
+
+#collapse {
+
+	float:left;
+}
+
+
 .page {
 	margin: 2em auto; 
 	width: 50em;
