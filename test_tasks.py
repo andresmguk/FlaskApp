@@ -1,4 +1,4 @@
-# flasktaskr3/test.py 
+# flasktaskr4/test_tasks.py 
 
 
 ###########
@@ -88,79 +88,6 @@ class AllTests(unittest.TestCase):
 
 
 
-
-
-
-	#### Login function unit tests ####
-	###################################
-
-	# 1
-	def test_form_is_presented_on_login_page(self):
-		response = self.app.get('/') 
-		self.assertEqual(response.status_code, 200)
-		self.assertIn(b'Please login to access your task list.', response.data)
-
-	# 2
-	def test_users_cannot_login_unless_registered(self):
-		response = self.login('foo', 'bar') # login helper method
-		self.assertIn(b'Invalid username or password.', response.data)
-
-	# 3
-	def test_users_can_loggin_when_registered(self):
-		self.register('filipe', 'filipe@sapo.pt', '123456', '123456') # register helper methof
-		response = self.login('filipe', '123456') # login helper method
-		self.assertIn('Welcome!', response.data)
-
-	# 4 - similar to # 2
-	def test_invalid_form_data(self):
-		self.register('filipe', 'filipe@sapo.pt', '123456', '123456') # register helper methof
-		response = self.login('Joaquim', '123456') # login helper method)
-		self.assertIn(b'Invalid username or password.', response.data)
-
-
-
-    ######################################
-	#### Register function unit tests ####
-	######################################
-
-	# 5
-	def test_form_is_presented_on_register_page(self):
-		response = self.app.get('register/') 
-		self.assertEqual(response.status_code, 200)
-		self.assertIn(b'Please register to access the task list.', response.data)
-
-	# 6 - users registration (form validation)
-	def test_user_registration(self):
-		self.app.get('register/', follow_redirects=True)
-		response = self.register('filipe', 'filipe@sapo.pt', '123456', '123456')
-		self.assertIn(b'Thanks for registering. Please login.', response.data)
-
-	# 7 - inccorret data on registration - similar to # 2 (avoid DRY) -> integrity test too!
-	def test_user_registration_error(self):
-		self.app.get('register/', follow_redirects=True)
-		self.register('filipe', 'filipe@sapo.pt', '123456', '123456')
-		self.app.get('register/', follow_redirects=True)
-		response = self.register('filipe', 'filipe@sapo.pt', '123456', '123456')
-		self.assertIn(b'That username and/or email already exist.', response.data)
-
-
-
-	######################################
-	#### Logout function unit tests ######
-	######################################
-
-	# 8
-	def test_logged_in_users_can_logout(self):
-		self.register('filipe', 'filipe@sapo.pt', '123456', '123456')
-		self.login('filipe', '123456')
-		response = self.logout()
-		self.assertIn(b'Goodbye!', response.data)
-
-
-	# 9
-	def test_not_logged_in_users_can_logout(self):
-		response = self.logout()
-		self.assertNotIn(b'Goodbye!', response.data) # assertNotIn
 
 
 	#############################################
