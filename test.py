@@ -220,10 +220,21 @@ class AllTests(unittest.TestCase):
 		self.login('filipe', '123456')
 		self.app.get('tasks/', follow_redirects=True)
 		response = self.app.get('complete/1/', follow_redirects=True)
-		self.assertIn(b'The task is complete!', response.data)
+		self.assertIn(b'You can only update tasks that belong to you', response.data)
 
 
-
+	# 15
+	def test_user_cannot_delete_tasks_they_did_not_create(self):
+		self.create_user('Andre', 'andre@lolo.pt', '123456')
+		self.login('Andre', '123456')
+		self.app.get('tasks/', follow_redirects=True)
+		self.create_task()
+		self.logout()
+		self.create_user('filipe', 'filipe@lolo.pt', '123456')
+		self.login('filipe', '123456')
+		self.app.get('tasks/', follow_redirects=True)
+		response = self.app.get('delete/1/', follow_redirects=True)
+		self.assertIn(b'You can only delete tasks that belong to you', response.data)
 
 
 

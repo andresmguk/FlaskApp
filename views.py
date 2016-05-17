@@ -90,8 +90,6 @@ def login():
 				return redirect(url_for('tasks'))
 			else:
 				error = 'Invalid username or password.'
-		else:
-			error = 'Both fields are required.'
 	return render_template('login.html', form=form, error=error)
 
 
@@ -170,15 +168,24 @@ def complete(task_id):
 	# set a new var
 	new_id = task_id 
 	
-	# Query and update the database
-	db.session.query(Task) .filter_by(task_id=new_id) .update({"status": "0"})
+	# Query the db an assign to a var
+	task = db.session.query(Task) .filter_by(task_id=new_id) 
 	
-	# commit changes an close db
-	db.session.commit()
-	
-	# flash message and redirect to tasks.html
-	flash('The task is complete!') 
-	return redirect(url_for('tasks'))
+	# check if the tasks belong to the user
+	if session['user_id'] == task.first().user_id: 
+
+		# upadate status
+		task. update({"status": "0"})
+		# commit changes an close db
+		db.session.commit()
+		
+		# flash message and redirect to tasks.html
+		flash('The task is complete!') 
+		return redirect(url_for('tasks'))
+
+	else:
+		flash('You can only update tasks that belong to you')
+		return redirect(url_for('tasks'))
 
 
 
@@ -192,16 +199,22 @@ def delete_entry(task_id):
 	new_id = task_id 
 	
 	# Query and delete the entry
-	db.session.query(Task) .filter_by(task_id=new_id) .delete()
-	
-	# commit changes an close db
-	db.session.commit()
-	
-	# flash message and redirect to tasks.html
-	
-	flash('The task was deleted.')
-	return redirect(url_for('tasks'))
+	task = db.session.query(Task) .filter_by(task_id=new_id)
 
+	if session['user_id'] == task.first().user_id: 
+
+		task.delete()
+	
+		# commit changes an close db
+		db.session.commit()
+		
+		# flash message and redirect to tasks.html
+		flash('The task was deleted.')
+		return redirect(url_for('tasks'))
+
+	else:
+		flash('You can only delete tasks that belong to you')
+		return redirect(url_for('tasks'))
 
 
 
