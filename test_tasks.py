@@ -86,6 +86,15 @@ class AllTests(unittest.TestCase):
 			posted_date='05/01/2016',
 			status='1'), follow_redirects=True)
 
+	# create a user with admin role
+	def create_admin_user(self):
+		new_user = User(
+			name='Superman',
+			email='admin@test.pt',
+			password='admin1234',
+			role='admin')
+		db.session.add(new_user)
+		db.session.commit()
 
 
 
@@ -162,6 +171,34 @@ class AllTests(unittest.TestCase):
 		self.app.get('tasks/', follow_redirects=True)
 		response = self.app.get('delete/1/', follow_redirects=True)
 		self.assertIn(b'You can only delete tasks that belong to you', response.data)
+
+
+	# 16
+	def test_admin_can_complete_tasks_they_did_not_create(self):
+		self.create_user('Andre', 'andre@lolo.pt', '123456')
+		self.login('Andre', '123456')
+		self.app.get('tasks/', follow_redirects=True)
+		self.create_task()
+		self.logout()
+		self.create_admin_user()
+		self.login('Superman', 'admin1234')
+		self.app.get('tasks/', follow_redirects=True)
+		response = self.app.get('complete/1/', follow_redirects=True)
+		self.assertNotIn(b'You can only update tasks that belong to you', response.data)
+
+
+	# 16
+	def test_admin_can_delete_tasks_they_did_not_create(self):
+		self.create_user('Andre', 'andre@lolo.pt', '123456')
+		self.login('Andre', '123456')
+		self.app.get('tasks/', follow_redirects=True)
+		self.create_task()
+		self.logout()
+		self.create_admin_user()
+		self.login('Superman', 'admin1234')
+		self.app.get('tasks/', follow_redirects=True)
+		response = self.app.get('delete/1/', follow_redirects=True)
+		self.assertNotIn(b'You can only delete tasks that belong to you', response.data)
 
 
 
